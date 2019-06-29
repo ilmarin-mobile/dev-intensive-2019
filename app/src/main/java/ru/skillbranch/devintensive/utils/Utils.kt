@@ -1,5 +1,7 @@
 package ru.skillbranch.devintensive.utils
 
+import java.lang.StringBuilder
+
 object Utils {
 
     fun parseFullName(fullName: String?): Pair<String?, String?> {
@@ -14,5 +16,18 @@ object Utils {
 
         return firstName to lastName
     }
+
+    fun toInitials(firstName: String?, lastName: String?): String? {
+        val firstNameInitial = getInitial(firstName)
+        val lastNameInitial = getInitial(lastName)
+        val initials = StringBuilder()
+        firstNameInitial?.run { initials.append(firstNameInitial) }
+        lastNameInitial?.run { initials.append(lastNameInitial) }
+
+        return if (initials.toString().isNotEmpty()) initials.toString() else null
+    }
+
+    private fun getInitial(someString: String?) =
+        someString?.replace(" ", "")?.toUpperCase()?.firstOrNull()
 
 }
