@@ -11,3 +11,6 @@ fun String.truncate(lastIndex: Int = 16): String {
 
     return this
 }
+
+fun String.stripHtml(): String =
+    replace(Regex("<.*?>|&.+;"), "").replace(Regex("\\s+"), " ")
