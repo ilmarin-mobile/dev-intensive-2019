@@ -9,7 +9,7 @@ enum class TimeUnits(
     val plural: Plural
 ) {
     SECOND(1000L, Plural("секунд", "секунду", "секунды", "секунд")),
-    MINUTE(60 * SECOND.value, Plural("минут", "минута", "минуты", "минут")),
+    MINUTE(60 * SECOND.value, Plural("минут", "минуту", "минуты", "минут")),
     HOUR(60 * MINUTE.value, Plural("часов", "час", "часа", "часов")),
     DAY(24 * HOUR.value, Plural("дней", "день", "дня", "дней"));
 
