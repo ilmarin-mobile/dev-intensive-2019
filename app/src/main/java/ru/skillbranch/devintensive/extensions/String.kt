@@ -1,14 +1,16 @@
 package ru.skillbranch.devintensive.extensions
 
 fun String.truncate(lastIndex: Int = 16): String {
-    if (length > lastIndex)
-        subSequence(0, lastIndex).trimEnd().let { subStr ->
-            if (subStr.length == trimEnd().length)
-                return subStr.toString()
-            else
-                return "${subStr}..."
-        }
-
+    trim().let {
+        if (it.length > lastIndex)
+            it.subSequence(0, lastIndex).let { subStr ->
+                if (subStr.length == it.length)
+                    return subStr.toString()
+                else
+                    return "${subStr}..."
+            }
+        return it
+    }
     return this
 }
 
