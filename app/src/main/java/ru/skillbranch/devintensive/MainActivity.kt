@@ -69,7 +69,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onResume() {
         super.onResume()
-        Log.d("_MainActivity","onResume ") 
+        Log.d("_MainActivity","onResume ")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity","onPause ")
     }
 
     override fun onStop() {
@@ -97,8 +102,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             val (phrase, color) =  benderObj.listenAnswer(messageEt.text.toString().toLowerCase())
             messageEt.setText("")
 
-            val (r,g,b) = color
-            benderImage.setColorFilter(Color.rgb(r,g,b), PorterDuff.Mode.MULTIPLY)
+            benderImage.setColorFilter(
+                Color.rgb(color.first, color.second, color.third),
+                PorterDuff.Mode.MULTIPLY
+            )
 
             textTxt.text = phrase
         }
