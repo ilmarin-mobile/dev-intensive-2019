@@ -18,13 +18,21 @@ class Bender (
         }
 
     fun listenAnswer(answer: String): Pair<String, Triple<Int, Int, Int>> {
-        return if (question.answers.contains(answer.toLowerCase())) {
-            question = question.nextQuestion()
-            "Отлично - ты справился\n${question.question}" to status.color
-        } else {
-            status = status.nextStatus()
-            "Это неправильный ответ${if (statusWasReset()) ". Давай все по новой" else ""}\n${question.question}" to status.color
-        }
+        var resultString = ""
+        if (question.isValidAnswer(answer)) {
+            if (question.answers.contains(answer.toLowerCase())) {
+                question = question.nextQuestion()
+                resultString = "Отлично - ты справился"
+            } else {
+                status = status.nextStatus()
+                resultString = "Это неправильный ответ${if (statusWasReset()) ". Давай все по новой" else ""}"
+            }
+        } else
+            resultString = question.notValidAnswerResponse
+
+        if (resultString.length > 0) resultString = "${resultString}\n"
+
+        return "${resultString}${question.question}" to status.color
     }
 
     private fun statusWasReset(): Boolean {
@@ -51,27 +59,36 @@ class Bender (
     }
     enum class Question(
         val question: String,
-        val answers: List<String>
+        val answers: List<String>,
+        val notValidAnswerResponse: String = ""
     ) {
-        NAME("Как меня зовут?", listOf("бендер", "bender")) {
+        NAME("Как меня зовут?", listOf("Бендер", "bender"), "Имя должно начинаться с заглавной буквы") {
             override fun nextQuestion(): Question = PROFESSION
+            override fun isValidAnswer(answer: String): Boolean = answer.length > 1 && answer[0].equals(answer[0].toUpperCase())
         },
-        PROFESSION("Назови мою профессию?", listOf("сгибальщик", "bender")){
+        PROFESSION("Назови мою профессию?", listOf("сгибальщик", "bender"), "Профессия должна начинаться со строчной буквы"){
             override fun nextQuestion(): Question = MATERIAL
+            override fun isValidAnswer(answer: String): Boolean = answer.length > 1 && answer[0].equals(answer[0].toLowerCase())
         },
-        MATERIAL("Из чего я сделан?", listOf("металл", "дерево", "metal", "iron", "wood")) {
+        MATERIAL("Из чего я сделан?", listOf("металл", "дерево", "metal", "iron", "wood"), "Материал не должен содержать цифр") {
             override fun nextQuestion(): Question = BDAY
+            override fun isValidAnswer(answer: String): Boolean = answer.length > 1 && !answer.contains(Regex("\\d+"))
         },
-        BDAY("Когда меня создали?", listOf("2993")) {
+        BDAY("Когда меня создали?", listOf("2993"), "Год моего рождения должен содержать только цифры") {
             override fun nextQuestion(): Question = SERIAL
+            override fun isValidAnswer(answer: String): Boolean = answer.length > 1 && !answer.contains(Regex("\\D+"))
         },
-        SERIAL("Мой серийный номер?", listOf("2716057")) {
+        SERIAL("Мой серийный номер?", listOf("2716057"), "Серийный номер содержит только цифры, и их 7") {
             override fun nextQuestion(): Question = IDLE
+            override fun isValidAnswer(answer: String): Boolean = answer.length == 7 && answer.contains(Regex("\\d+"))
         },
         IDLE("На этом все, вопросов больше нет", listOf()) {
             override fun nextQuestion(): Question = IDLE
+            override fun isValidAnswer(answer: String): Boolean = false
         };
 
         abstract fun nextQuestion(): Question
+
+        abstract fun isValidAnswer(answer: String): Boolean
     }
 }
