@@ -28,10 +28,10 @@ class Bender (
     }
 
     private fun statusWasReset(): Boolean {
-        if (status == Status.NORMAL) {
+        return if (status == Status.NORMAL) {
             question = Question.NAME
-            return true
-        } else return false
+            true
+        } else false
     }
 
     enum class Status(
