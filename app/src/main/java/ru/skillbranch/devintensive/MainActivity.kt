@@ -5,6 +5,7 @@ import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -30,6 +31,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         benderImage = iv_bender
         textTxt = tv_text
         messageEt = et_message
+        messageEt.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                handleAnswer()
+                true
+            } else false
+        })
         sendBtn = iv_send
         sendBtn.setOnClickListener(this)
 
@@ -100,17 +107,21 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         if (v?.id == R.id.iv_send) {
-            hideKeyboard()
-            val (phrase, color) =  benderObj.listenAnswer(messageEt.text.toString().toLowerCase())
-            messageEt.setText("")
-
-            benderImage.setColorFilter(
-                Color.rgb(color.first, color.second, color.third),
-                PorterDuff.Mode.MULTIPLY
-            )
-
-            textTxt.text = phrase
+            handleAnswer()
         }
+    }
+
+    private fun handleAnswer() {
+        hideKeyboard()
+        val (phrase, color) =  benderObj.listenAnswer(messageEt.text.toString().toLowerCase())
+        messageEt.setText("")
+
+        benderImage.setColorFilter(
+            Color.rgb(color.first, color.second, color.third),
+            PorterDuff.Mode.MULTIPLY
+        )
+
+        textTxt.text = phrase
     }
 
 }

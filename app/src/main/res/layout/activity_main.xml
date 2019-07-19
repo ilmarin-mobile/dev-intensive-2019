@@ -35,7 +35,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:lines="1"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
                 android:textColor="@color/color_gray_light"
                 android:textColorHint="@color/color_gray_light"
                 android:hint="@string/edittext_hint_simple"
@@ -50,9 +51,7 @@
                 android:layout_height="@dimen/spacing_large_24"
                 android:src="@drawable/ic_send_white_24dp"
                 android:layout_gravity="center"
-                android:layout_marginRight="@dimen/spacing_normal_16"
-
-        />
+                android:layout_marginRight="@dimen/spacing_normal_16"/>
 
 
     </LinearLayout>
