@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Point
 import android.graphics.Rect
-import android.util.Log
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.content.res.Configuration
@@ -24,24 +23,26 @@ fun Activity.showKeyboard() {
 }
 
 fun Activity.isKeyboardOpen(): Boolean {
-    return currentKeyboardHeight() > 0
+    return isKeyboardVisible()
 }
 
 fun Activity.isKeyboardClosed(): Boolean {
-    return currentKeyboardHeight() == 0
+    return !isKeyboardVisible()
+}
+
+fun Activity.isKeyboardVisible(): Boolean {
+    val orientation = getResources().getConfiguration().orientation
+
+    if (orientation == Configuration.ORIENTATION_PORTRAIT)
+        return currentKeyboardHeight() != 0
+    else {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        return imm.isFullscreenMode
+    };
 }
 
 fun Activity.currentKeyboardHeight(): Int {
-
-    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-    val appHeight = appHeight()
-    Log.i("height", "appHeight ${appHeight}")
-
-    val viewHeight = rootViewHeight()
-    Log.i("height", "viewHeight ${viewHeight}")
-
-    return appHeight - viewHeight
+    return appHeight() - rootViewHeight()
 }
 
 fun Activity.appHeight(): Int {
@@ -55,10 +56,8 @@ fun Activity.appHeight(): Int {
 }
 
 fun Activity.rootViewHeight(): Int {
-    val rect1 = Rect()
-    window.decorView.rootView.getWindowVisibleDisplayFrame(rect1)
-    Log.i("height", "rootView.height = "+ window.decorView.rootView.height)
-    return rect1.bottom-rect1.top
+    val rect = Rect().apply { window.decorView.rootView.getWindowVisibleDisplayFrame(this) }
+    return rect.bottom-rect.top
 }
 
 fun Activity.navigationBarHeight(): Int {

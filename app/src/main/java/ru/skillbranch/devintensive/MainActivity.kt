@@ -43,11 +43,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 true
             } else false
         })
-        messageEt.showSoftInputOnFocus = false
-        messageEt.setOnClickListener { v: View? ->
-            Log.d("height","onCreate isKeyboardClosed = ${isKeyboardClosed()}")
-            showKeyboard()
-        }
         sendBtn = iv_send
         sendBtn.setOnClickListener(this)
 
