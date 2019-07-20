@@ -19,7 +19,7 @@ class Bender (
 
     fun listenAnswer(answer: String): Pair<String, Triple<Int, Int, Int>> {
         var resultString = ""
-//        if (question.isValidAnswer(answer)) {
+        if (question.isValidAnswer(answer)) {
         if (question.answers.size > 0)
             if (question.answers.contains(answer.toLowerCase())) {
                 question = question.nextQuestion()
@@ -28,8 +28,8 @@ class Bender (
                 status = status.nextStatus()
                 resultString = "Это неправильный ответ${if (statusWasReset()) ". Давай все по новой" else ""}"
             }
-//        } else
-//            resultString = question.notValidAnswerResponse
+        } else
+            resultString = question.notValidAnswerResponse
 
         if (resultString.length > 0) resultString = "${resultString}\n"
 
@@ -81,7 +81,7 @@ class Bender (
         },
         SERIAL("Мой серийный номер?", listOf("2716057"), "Серийный номер содержит только цифры, и их 7") {
             override fun nextQuestion(): Question = IDLE
-            override fun isValidAnswer(answer: String): Boolean = answer.length == 7 && answer.contains(Regex("\\d+"))
+            override fun isValidAnswer(answer: String): Boolean = answer.length == 7 && !answer.contains(Regex("\\D+"))
         },
         IDLE("На этом все, вопросов больше нет", listOf()) {
             override fun nextQuestion(): Question = IDLE

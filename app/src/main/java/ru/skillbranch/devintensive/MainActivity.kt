@@ -3,6 +3,8 @@ package ru.skillbranch.devintensive
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -10,11 +12,10 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
+import com.jakewharton.rxbinding2.widget.RxTextView
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.skillbranch.devintensive.extensions.hideKeyboard
-import ru.skillbranch.devintensive.extensions.isKeyboardClosed
-import ru.skillbranch.devintensive.extensions.isKeyboardOpen
 import ru.skillbranch.devintensive.extensions.showKeyboard
 import ru.skillbranch.devintensive.models.Bender
 
@@ -39,10 +40,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         messageEt = et_message
         messageEt.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard()
                 handleAnswer()
                 true
             } else false
         })
+
         sendBtn = iv_send
         sendBtn.setOnClickListener(this)
 
@@ -118,13 +121,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun handleAnswer() {
-        Log.d("height","handleAnswer rootView.isVisible = ${rootView.isVisible}")
-
-        Log.d("height","handleAnswer isKeyboardOpen = ${isKeyboardOpen()}")
-        Log.d("height","handleAnswer rootView.height = ${rootView.height}")
-
-        hideKeyboard()
-        val (phrase, color) =  benderObj.listenAnswer(messageEt.text.toString().toLowerCase())
+        val (phrase, color) =  benderObj.listenAnswer(messageEt.text.toString())
         messageEt.setText("")
 
         benderImage.setColorFilter(
@@ -135,5 +132,4 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         textTxt.text = phrase
 
     }
-
 }

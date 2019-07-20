@@ -7,6 +7,9 @@ import android.graphics.Rect
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.content.res.Configuration
+import android.util.TypedValue
+import android.view.View
+import kotlin.math.roundToInt
 
 fun Activity.hideKeyboard() {
     if (getCurrentFocus() == null) return
@@ -15,11 +18,13 @@ fun Activity.hideKeyboard() {
     imm?.run { hideSoftInputFromWindow(getCurrentFocus()!!.getWindowToken(), 0) }
 }
 
-fun Activity.showKeyboard() {
-    if (getCurrentFocus() == null) return
-
-    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-    imm?.run { showSoftInput(getCurrentFocus(), 0) }
+fun Activity.showKeyboard(view: View) {
+    view.postDelayed({
+        if (isKeyboardClosed()) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(view, 0)
+        }
+    }, 200)
 }
 
 fun Activity.isKeyboardOpen(): Boolean {
@@ -30,12 +35,16 @@ fun Activity.isKeyboardClosed(): Boolean {
     return !isKeyboardVisible()
 }
 
+fun Context.dpToPx(dp: Float): Int = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).roundToInt()
+
 fun Activity.isKeyboardVisible(): Boolean {
     val orientation = getResources().getConfiguration().orientation
 
-    if (orientation == Configuration.ORIENTATION_PORTRAIT)
-        return currentKeyboardHeight() != 0
-    else {
+    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+        val rect = Rect().apply { window.decorView.rootView.getWindowVisibleDisplayFrame(this) }
+        return window.decorView.rootView.height - rect.height() > dpToPx(128F)
+//        return currentKeyboardHeight() != 0
+    } else {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         return imm.isFullscreenMode
     };
@@ -57,7 +66,7 @@ fun Activity.appHeight(): Int {
 
 fun Activity.rootViewHeight(): Int {
     val rect = Rect().apply { window.decorView.rootView.getWindowVisibleDisplayFrame(this) }
-    return rect.bottom-rect.top
+    return rect.bottom - rect.top
 }
 
 fun Activity.navigationBarHeight(): Int {
