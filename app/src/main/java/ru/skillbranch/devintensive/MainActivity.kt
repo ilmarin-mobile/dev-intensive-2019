@@ -10,12 +10,17 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.skillbranch.devintensive.extensions.hideKeyboard
+import ru.skillbranch.devintensive.extensions.isKeyboardClosed
+import ru.skillbranch.devintensive.extensions.isKeyboardOpen
+import ru.skillbranch.devintensive.extensions.showKeyboard
 import ru.skillbranch.devintensive.models.Bender
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
+    lateinit var rootView: View
     lateinit var benderImage: ImageView
     lateinit var textTxt: TextView
     lateinit var messageEt: EditText
@@ -28,6 +33,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         setContentView(R.layout.activity_main)
         Log.d("_MainActivity","onCreate ")
 
+        rootView = v_rootView
         benderImage = iv_bender
         textTxt = tv_text
         messageEt = et_message
@@ -37,6 +43,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 true
             } else false
         })
+        messageEt.showSoftInputOnFocus = false
+        messageEt.setOnClickListener { v: View? ->
+            Log.d("height","onCreate isKeyboardClosed = ${isKeyboardClosed()}")
+            showKeyboard()
+        }
         sendBtn = iv_send
         sendBtn.setOnClickListener(this)
 
@@ -112,6 +123,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun handleAnswer() {
+        Log.d("height","handleAnswer rootView.isVisible = ${rootView.isVisible}")
+
+        Log.d("height","handleAnswer isKeyboardOpen = ${isKeyboardOpen()}")
+        Log.d("height","handleAnswer rootView.height = ${rootView.height}")
+
         hideKeyboard()
         val (phrase, color) =  benderObj.listenAnswer(messageEt.text.toString().toLowerCase())
         messageEt.setText("")
@@ -122,6 +138,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         )
 
         textTxt.text = phrase
+
     }
 
 }
