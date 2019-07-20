@@ -19,7 +19,8 @@ class Bender (
 
     fun listenAnswer(answer: String): Pair<String, Triple<Int, Int, Int>> {
         var resultString = ""
-        if (question.isValidAnswer(answer)) {
+//        if (question.isValidAnswer(answer)) {
+        if (question.answers.size > 0)
             if (question.answers.contains(answer.toLowerCase())) {
                 question = question.nextQuestion()
                 resultString = "Отлично - ты справился"
@@ -27,8 +28,8 @@ class Bender (
                 status = status.nextStatus()
                 resultString = "Это неправильный ответ${if (statusWasReset()) ". Давай все по новой" else ""}"
             }
-        } else
-            resultString = question.notValidAnswerResponse
+//        } else
+//            resultString = question.notValidAnswerResponse
 
         if (resultString.length > 0) resultString = "${resultString}\n"
 
@@ -62,7 +63,7 @@ class Bender (
         val answers: List<String>,
         val notValidAnswerResponse: String = ""
     ) {
-        NAME("Как меня зовут?", listOf("Бендер", "bender"), "Имя должно начинаться с заглавной буквы") {
+        NAME("Как меня зовут?", listOf("бендер", "bender"), "Имя должно начинаться с заглавной буквы") {
             override fun nextQuestion(): Question = PROFESSION
             override fun isValidAnswer(answer: String): Boolean = answer.length > 1 && answer[0].equals(answer[0].toUpperCase())
         },
