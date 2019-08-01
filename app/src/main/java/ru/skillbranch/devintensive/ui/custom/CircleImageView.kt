@@ -16,6 +16,14 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.RectF
 import ru.skillbranch.devintensive.R
+import android.graphics.PixelFormat
+import android.graphics.ColorFilter
+import android.graphics.drawable.GradientDrawable.RECTANGLE
+import android.R.attr.shape
+import android.text.TextPaint
+import android.text.TextUtils
+import ru.skillbranch.devintensive.utils.Utils
+
 
 /*
 xml атрибуты
@@ -68,6 +76,27 @@ class CircleImageView @JvmOverloads constructor(
     private var shaderBg: BitmapShader? = null
     private var shaderSrc: BitmapShader? = null
 
+    /*
+    * Contains initials of the member
+    * */
+    var imageText: String? = null
+
+    /*
+    * Used to set size and color of the member initials
+    * */
+    var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    var textPaint: TextPaint? = TextPaint(Paint.ANTI_ALIAS_FLAG)
+
+     var cornerRadius: Int
+
+    /*
+    * Bounds of the canvas in float
+    * Used to set bounds of member initial and background
+    * */
+    var rectF: RectF? = null
+
+    private var showText = false;
+
     init {
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
@@ -99,6 +128,14 @@ class CircleImageView @JvmOverloads constructor(
         paintBorder.setAntiAlias(true)
         paintBorder.setStrokeWidth(context.dpToPx(borderWidth));
 
+
+        cornerRadius = context.dpToPx(2f).toInt();
+
+        paint.color = Color.MAGENTA
+        textPaint?.setColor(Color.WHITE);
+
+        textPaint?.setTextSize(16f * getResources().getDisplayMetrics().scaledDensity);
+        textPaint?.setColor(Color.WHITE);
 
         initRect()
         invalidate()
@@ -132,6 +169,15 @@ class CircleImageView @JvmOverloads constructor(
             e.printStackTrace();
         }
         return null
+    }
+
+    fun setText(text: String?) {
+        imageText = text
+        if (!TextUtils.isEmpty(imageText))
+            showText = true
+        else
+            showText = false
+        this.invalidate()
     }
 
     fun getBorderWidth(): Int {
@@ -169,6 +215,22 @@ class CircleImageView @JvmOverloads constructor(
         // init shaderBg
 
         initRect()
+
+        if (showText) {
+            val centerX = Math.round(canvas.width * 0.5f)*1f
+            val centerY = Math.round(canvas.height * 0.5f)*1f
+            if (imageText != null) {
+                val textWidth = textPaint?.measureText(imageText)!! * 0.5f
+                val textBaseLineHeight = textPaint?.getFontMetrics()?.ascent!! * -0.4f
+
+
+            canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(),
+                    drawableRadius,
+                    paint)
+
+            canvas.drawText(imageText, centerX - textWidth, centerY + textBaseLineHeight, textPaint)
+            }
+        }else {
 
         if (bgBitmap == null && drawable != null) {
             bgBitmap = getBitmap(drawable, canvas.width, canvas.height)
@@ -215,6 +277,7 @@ class CircleImageView @JvmOverloads constructor(
 
             canvas.drawCircle(circleCenter + borderWidth, circleCenter + borderWidth, circleCenter.toFloat(), paintSrcBitmap)
         }
+        }
 
         if (borderWidth > 0) {
             canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), borderRadius, paintBorder);
@@ -252,6 +315,7 @@ class CircleImageView @JvmOverloads constructor(
 
         return RectF(left, top, left + sideLength, top + sideLength)
     }
+
 
 //    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
 //        val width = measureWidth(widthMeasureSpec)

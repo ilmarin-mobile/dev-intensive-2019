@@ -28,6 +28,8 @@ import kotlinx.android.synthetic.main.activity_profile.*
 
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.Profile
+import ru.skillbranch.devintensive.ui.custom.CircleImageView
+import ru.skillbranch.devintensive.utils.Utils
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
 class ProfileActivity : AppCompatActivity() {
@@ -77,7 +79,10 @@ class ProfileActivity : AppCompatActivity() {
         showCurrentMode(isEditMode)
 
         btn_edit.setOnClickListener {
-            if (isEditMode) saveProfileInfo()
+            if (isEditMode) {
+                saveProfileInfo()
+                updateAvatar()
+            }
             isEditMode = !isEditMode
             showCurrentMode(isEditMode)
         }
@@ -85,6 +90,13 @@ class ProfileActivity : AppCompatActivity() {
         btn_switch_theme.setOnClickListener {
             viewModel.switchTheme()
         }
+    }
+
+    private fun updateAvatar() {
+        //                iv_avatar
+        val initials = Utils.toInitials(et_first_name.text.toString(), et_last_name.text.toString())
+        (iv_avatar as CircleImageView).setText(initials)
+
     }
 
     private fun initViewModel() {
@@ -135,6 +147,7 @@ class ProfileActivity : AppCompatActivity() {
                 v.text = it[k].toString()
             }
         }
+        updateAvatar()
     }
 
     private fun saveProfileInfo() {
