@@ -35,14 +35,14 @@ fun Activity.isKeyboardClosed(): Boolean {
     return !isKeyboardVisible()
 }
 
-fun Context.dpToPx(dp: Float): Int = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).roundToInt()
+fun Context.dpToPx(dp: Float): Float = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
 
 fun Activity.isKeyboardVisible(): Boolean {
     val orientation = getResources().getConfiguration().orientation
 
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
         val rect = Rect().apply { window.decorView.rootView.getWindowVisibleDisplayFrame(this) }
-        return window.decorView.rootView.height - rect.height() > dpToPx(128F)
+        return window.decorView.rootView.height - rect.height() > dpToPx(128F).roundToInt()
 //        return currentKeyboardHeight() != 0
     } else {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
