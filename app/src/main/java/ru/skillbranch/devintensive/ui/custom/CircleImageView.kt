@@ -46,7 +46,7 @@ class CircleImageView @JvmOverloads constructor(
         private const val DEFAULT_BORDER_COLOR = "#FFFFFF"
     }
 
-    private var borderWidth= context.dpToPx(DEFAULT_BORDER_WIDTH_DP)
+    private var borderWidth = DEFAULT_BORDER_WIDTH_DP
     private var borderColor = Color.parseColor(DEFAULT_BORDER_COLOR)
 
     private var viewWidth: Int = 0
@@ -62,7 +62,7 @@ class CircleImageView @JvmOverloads constructor(
     private lateinit var paintBorder: Paint
     private val borderRect = RectF()
 
-    private var mDrawableRadius: Float = 0.toFloat()
+    private var drawableRadius: Float = 0.toFloat()
     private var borderRadius: Float = 0.toFloat()
 
     private var shaderBg: BitmapShader? = null
@@ -97,17 +97,10 @@ class CircleImageView @JvmOverloads constructor(
         paintBorder.setAntiAlias(true);
         paintBorder.setColor(borderColor)
         paintBorder.setAntiAlias(true)
-        paintBorder.setStrokeWidth(borderWidth);
+        paintBorder.setStrokeWidth(context.dpToPx(borderWidth));
 
-        borderRect.set(calculateBounds());
-        borderRadius = Math.min((borderRect.height() - borderWidth) / 2.0f, (borderRect.width() - borderWidth) / 2.0f);
 
-        drawableRect.set(borderRect);
-//        if (!mBorderOverlay && borderWidth > 0) {
-//            drawableRect.inset(borderWidth - 1.0f, borderWidth - 1.0f);
-//        }
-        mDrawableRadius = Math.min(drawableRect.height() / 2.0f, drawableRect.width() / 2.0f);
-
+        initRect()
         invalidate()
     }
 
@@ -141,16 +134,29 @@ class CircleImageView @JvmOverloads constructor(
         return null
     }
 
+    fun getBorderWidth(): Int {
+        return borderWidth.toInt()
+    }
+
     fun setBorderWidth(dp: Int) {
-        this.borderWidth = borderWidth
+        this.borderWidth = dp*1f
         this.invalidate()
     }
 
-    fun setBorderColor(hex: String) {
-        setBorderColor(Color.parseColor(hex))
+    fun getBorderColor():Int {
+        return borderColor
     }
 
-    fun setBorderColor(borderColor: Int) {
+    fun setBorderColor(hex: String) {
+        setBorderColorInt(Color.parseColor(hex))
+    }
+
+    fun setBorderColor(/*@ColorRes*/ borderColorRes: Int) {
+        setBorderColorInt(context.resources.getColor(borderColorRes,context.theme))
+    }
+
+    fun setBorderColorInt(borderColor: Int) {
+        this.borderColor = borderColor
         if (paintBorder != null)
             paintBorder.setColor(borderColor)
 
@@ -162,7 +168,9 @@ class CircleImageView @JvmOverloads constructor(
         val circleCenter = viewWidth / 2
         // init shaderBg
 
-        if (bgBitmap == null) {
+        initRect()
+
+        if (bgBitmap == null && drawable != null) {
             bgBitmap = getBitmap(drawable, canvas.width, canvas.height)
         }
 
@@ -183,10 +191,10 @@ class CircleImageView @JvmOverloads constructor(
 
 //            canvas.drawCircle(circleCenter + borderWidth, circleCenter + borderWidth, circleCenter.toFloat(), paintBgBitmap)
 
-            canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(), mDrawableRadius, paintBgBitmap);
+            canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(), drawableRadius, paintBgBitmap);
         }
 
-        if (srcBitmap == null) {
+        if (srcBitmap == null && foreground != null) {
             srcBitmap = getBitmap(foreground, canvas.width, canvas.height)
         }
 
@@ -222,6 +230,17 @@ class CircleImageView @JvmOverloads constructor(
 
     }
 
+    private fun initRect() {
+        borderRect.set(calculateBounds());
+        borderRadius = Math.min((borderRect.height() - borderWidth) / 2.0f, (borderRect.width() - borderWidth) / 2.0f);
+
+        drawableRect.set(borderRect);
+//        if (!mBorderOverlay && borderWidth > 0) {
+//            drawableRect.inset(borderWidth - 1.0f, borderWidth - 1.0f);
+//        }
+        drawableRadius = Math.min(drawableRect.height() / 2.0f, drawableRect.width() / 2.0f);
+    }
+
     private fun calculateBounds(): RectF {
         val availableWidth = width - paddingLeft - paddingRight
         val availableHeight = height - paddingTop - paddingBottom
@@ -234,45 +253,45 @@ class CircleImageView @JvmOverloads constructor(
         return RectF(left, top, left + sideLength, top + sideLength)
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val width = measureWidth(widthMeasureSpec)
-        val height = measureHeight(heightMeasureSpec, widthMeasureSpec)
-
-        viewWidth = width - borderWidth.toInt() * 2
-        viewHeight = height - borderWidth.toInt() * 2
-
-        setMeasuredDimension(width, height)
-    }
-
-    private fun measureWidth(measureSpec: Int): Int {
-        var result = 0
-        val specMode = View.MeasureSpec.getMode(measureSpec)
-        val specSize = View.MeasureSpec.getSize(measureSpec)
-
-        if (specMode == View.MeasureSpec.EXACTLY) {
-            // We were told how big to be
-            result = specSize
-        } else {
-            // Measure the text
-            result = viewWidth
-
-        }
-
-        return result
-    }
-
-    private fun measureHeight(measureSpecHeight: Int, measureSpecWidth: Int): Int {
-        var result = 0
-        val specMode = View.MeasureSpec.getMode(measureSpecHeight)
-        val specSize = View.MeasureSpec.getSize(measureSpecHeight)
-
-        if (specMode == View.MeasureSpec.EXACTLY) {
-            // We were told how big to be
-            result = specSize
-        } else {
-            // Measure the text (beware: ascent is a negative number)
-            result = viewHeight
-        }
-        return result
-    }
+//    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+//        val width = measureWidth(widthMeasureSpec)
+//        val height = measureHeight(heightMeasureSpec, widthMeasureSpec)
+//
+//        viewWidth = width - borderWidth.toInt() * 2
+//        viewHeight = height - borderWidth.toInt() * 2
+//
+//        setMeasuredDimension(width, height)
+//    }
+//
+//    private fun measureWidth(measureSpec: Int): Int {
+//        var result = 0
+//        val specMode = View.MeasureSpec.getMode(measureSpec)
+//        val specSize = View.MeasureSpec.getSize(measureSpec)
+//
+//        if (specMode == View.MeasureSpec.EXACTLY) {
+//            // We were told how big to be
+//            result = specSize
+//        } else {
+//            // Measure the text
+//            result = viewWidth
+//
+//        }
+//
+//        return result
+//    }
+//
+//    private fun measureHeight(measureSpecHeight: Int, measureSpecWidth: Int): Int {
+//        var result = 0
+//        val specMode = View.MeasureSpec.getMode(measureSpecHeight)
+//        val specSize = View.MeasureSpec.getSize(measureSpecHeight)
+//
+//        if (specMode == View.MeasureSpec.EXACTLY) {
+//            // We were told how big to be
+//            result = specSize
+//        } else {
+//            // Measure the text (beware: ascent is a negative number)
+//            result = viewHeight
+//        }
+//        return result
+//    }
 }
