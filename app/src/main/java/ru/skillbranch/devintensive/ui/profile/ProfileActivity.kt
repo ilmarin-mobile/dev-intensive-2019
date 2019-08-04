@@ -4,7 +4,6 @@ import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.EditText
@@ -31,6 +30,10 @@ import ru.skillbranch.devintensive.models.Profile
 import ru.skillbranch.devintensive.ui.custom.CircleImageView
 import ru.skillbranch.devintensive.utils.Utils
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
+import android.text.Editable
+import android.text.TextWatcher
+import ru.skillbranch.devintensive.models.isValidProfileRepository
+
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -43,9 +46,6 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var viewFields: Map<String, TextView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        // TODO set theme
-
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
         setContentView(R.layout.activity_profile)
@@ -80,6 +80,7 @@ class ProfileActivity : AppCompatActivity() {
 
         btn_edit.setOnClickListener {
             if (isEditMode) {
+                if (wr_repository.isErrorEnabled) et_repository.setText("")
                 saveProfileInfo()
                 updateAvatar()
             }
@@ -90,6 +91,22 @@ class ProfileActivity : AppCompatActivity() {
         btn_switch_theme.setOnClickListener {
             viewModel.switchTheme()
         }
+
+        et_repository.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable) {
+                if(!isValidProfileRepository(s.toString())) {
+                    wr_repository.isErrorEnabled = true
+                    wr_repository.error = "Невалидный адрес репозитория"
+                } else {
+                    wr_repository.error = ""
+                    wr_repository.isErrorEnabled = false
+                }
+            }
+        });
     }
 
     private fun updateAvatar() {

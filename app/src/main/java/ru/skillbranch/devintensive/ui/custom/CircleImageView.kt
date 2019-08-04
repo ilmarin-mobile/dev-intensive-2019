@@ -6,7 +6,6 @@ import android.widget.ImageView
 import android.graphics.drawable.BitmapDrawable
 import ru.skillbranch.devintensive.extensions.dpToPx
 import android.graphics.*
-import android.view.View
 import android.graphics.Shader
 import android.graphics.BitmapShader
 import android.graphics.Bitmap
@@ -16,13 +15,10 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.RectF
 import ru.skillbranch.devintensive.R
-import android.graphics.PixelFormat
-import android.graphics.ColorFilter
-import android.graphics.drawable.GradientDrawable.RECTANGLE
-import android.R.attr.shape
 import android.text.TextPaint
 import android.text.TextUtils
-import ru.skillbranch.devintensive.utils.Utils
+import android.graphics.ColorFilter
+import android.util.TypedValue
 
 
 /*
@@ -87,8 +83,9 @@ class CircleImageView @JvmOverloads constructor(
     var paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     var textPaint: TextPaint? = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
-     var cornerRadius: Int
+    var cornerRadius: Int
 
+    var initDrawable: Drawable? = null
     /*
     * Bounds of the canvas in float
     * Used to set bounds of member initial and background
@@ -131,9 +128,14 @@ class CircleImageView @JvmOverloads constructor(
 
         cornerRadius = context.dpToPx(2f).toInt();
 
-        paint.color = Color.MAGENTA
-        textPaint?.setColor(Color.WHITE);
+        val typedValue = TypedValue().apply {
+            context.theme.resolveAttribute(R.attr.colorAccent, this, true)
+        }
 
+        paint.color = typedValue.data
+//                -10463112
+
+        textPaint?.setColor(Color.WHITE);
         textPaint?.setTextSize(16f * getResources().getDisplayMetrics().scaledDensity);
         textPaint?.setColor(Color.WHITE);
 
@@ -172,11 +174,16 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     fun setText(text: String?) {
+        if (initDrawable == null)
+            initDrawable = drawable
+
         imageText = text
         if (!TextUtils.isEmpty(imageText))
             showText = true
         else
             showText = false
+        invalidateDrawable(drawable)
+        setImageDrawable(null)
         this.invalidate()
     }
 
@@ -217,79 +224,63 @@ class CircleImageView @JvmOverloads constructor(
         initRect()
 
         if (showText) {
-            val centerX = Math.round(canvas.width * 0.5f)*1f
-            val centerY = Math.round(canvas.height * 0.5f)*1f
-            if (imageText != null) {
-                val textWidth = textPaint?.measureText(imageText)!! * 0.5f
-                val textBaseLineHeight = textPaint?.getFontMetrics()?.ascent!! * -0.4f
+            var bmp = getBitmap(drawable, canvas.width, canvas.height)
+
+            if (bmp != null) {
+
+                    var shader = BitmapShader(
+                            Bitmap.createScaledBitmap(bmp, canvas.width, canvas.height, false),
+                            Shader.TileMode.CLAMP,
+                            Shader.TileMode.CLAMP
+                    )
+
+                var _paint =  Paint()
+                _paint.setAntiAlias(true)
+                _paint.setShader(shader)
 
 
-            canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(),
-                    drawableRadius,
-                    paint)
-
-            canvas.drawText(imageText, centerX - textWidth, centerY + textBaseLineHeight, textPaint)
+                canvas.drawBitmap(bmp, 0f, 0f, _paint);
             }
         }else {
 
-        if (bgBitmap == null && drawable != null) {
-            bgBitmap = getBitmap(drawable, canvas.width, canvas.height)
-        }
-
-        if (bgBitmap != null) {
-            if (shaderBg == null) {
-                shaderBg = BitmapShader(
-                    Bitmap.createScaledBitmap(bgBitmap, canvas.width, canvas.height, false),
-                    Shader.TileMode.CLAMP,
-                    Shader.TileMode.CLAMP
-                )
+            if (bgBitmap == null && initDrawable != null) {
+                bgBitmap = getBitmap(initDrawable!!, canvas.width, canvas.height)
             }
-            paintBgBitmap.setShader(shaderBg)
 
+            if (bgBitmap != null) {
+                if (shaderBg == null) {
+                    shaderBg = BitmapShader(
+                        Bitmap.createScaledBitmap(bgBitmap, canvas.width, canvas.height, false),
+                        Shader.TileMode.CLAMP,
+                        Shader.TileMode.CLAMP
+                    )
+                }
+                paintBgBitmap.setShader(shaderBg)
 
-            // circleCenter is the x or y of the view's center
-            // radius is the radius in pixels of the cirle to be drawn
-            // paint contains the shaderBg that will texture the shape
-
-//            canvas.drawCircle(circleCenter + borderWidth, circleCenter + borderWidth, circleCenter.toFloat(), paintBgBitmap)
-
-            canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(), drawableRadius, paintBgBitmap);
-        }
-
-        if (srcBitmap == null && foreground != null) {
-            srcBitmap = getBitmap(foreground, canvas.width, canvas.height)
-        }
-
-        if (srcBitmap != null) {
-            if (shaderSrc == null) {
-                shaderSrc = BitmapShader(
-                    Bitmap.createScaledBitmap(srcBitmap, canvas.width, canvas.height, false),
-                    Shader.TileMode.CLAMP,
-                    Shader.TileMode.CLAMP
-                )
+                canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(), drawableRadius, paintBgBitmap);
             }
-            paintSrcBitmap.setShader(shaderSrc)
 
+            if (srcBitmap == null && foreground != null) {
+                srcBitmap = getBitmap(foreground, canvas.width, canvas.height)
+            }
 
-            // circleCenter is the x or y of the view's center
-            // radius is the radius in pixels of the cirle to be drawn
-            // paint contains the shaderBg that will texture the shape
+            if (srcBitmap != null) {
+                if (shaderSrc == null) {
+                    shaderSrc = BitmapShader(
+                        Bitmap.createScaledBitmap(srcBitmap, canvas.width, canvas.height, false),
+                        Shader.TileMode.CLAMP,
+                        Shader.TileMode.CLAMP
+                    )
+                }
+                paintSrcBitmap.setShader(shaderSrc)
 
-            canvas.drawCircle(circleCenter + borderWidth, circleCenter + borderWidth, circleCenter.toFloat(), paintSrcBitmap)
-        }
+                canvas.drawCircle(circleCenter + borderWidth, circleCenter + borderWidth, circleCenter.toFloat(), paintSrcBitmap)
+            }
         }
 
         if (borderWidth > 0) {
-            canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), borderRadius, paintBorder);
-
-//            canvas.drawCircle(
-//                circleCenter + borderWidth,
-//                circleCenter + borderWidth,
-//                circleCenter + borderWidth,
-//                paintBorder
-//            )
+            canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), borderRadius-borderWidth, paintBorder);
         }
-
 
     }
 
@@ -316,8 +307,7 @@ class CircleImageView @JvmOverloads constructor(
         return RectF(left, top, left + sideLength, top + sideLength)
     }
 
-
-//    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    //    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
 //        val width = measureWidth(widthMeasureSpec)
 //        val height = measureHeight(heightMeasureSpec, widthMeasureSpec)
 //
@@ -358,4 +348,59 @@ class CircleImageView @JvmOverloads constructor(
 //        }
 //        return result
 //    }
+
+
+
+    override fun setImageDrawable(drawable: Drawable?) {
+        if (showText)
+            super.setImageDrawable(CustomDrawable())
+        else
+            super.setImageDrawable(this.drawable)
+    }
+
+
+    inner class CustomDrawable() : Drawable() {
+
+        override fun getIntrinsicWidth(): Int {
+            return bounds.right - bounds.left
+        }
+
+
+        override fun getIntrinsicHeight(): Int {
+            return bounds.bottom - bounds.top
+        }
+
+        override fun setAlpha(alpha: Int) {
+        }
+
+        override fun getOpacity(): Int {
+            return PixelFormat.OPAQUE;
+        }
+
+        override fun setColorFilter(colorFilter: ColorFilter?) {
+        }
+
+        override fun isStateful(): Boolean {
+            // always return true
+            return true
+        }
+
+        override fun draw(canvas: Canvas) {
+
+            val centerX = Math.round(canvas.width * 0.5f)*1f
+            val centerY = Math.round(canvas.height * 0.5f)*1f
+            if (imageText != null) {
+                val textWidth = textPaint?.measureText(imageText)!! * 0.5f
+                val textBaseLineHeight = textPaint?.getFontMetrics()?.ascent!! * -0.4f
+
+
+                canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(),
+                        drawableRadius,
+                        paint)
+
+                canvas.drawText(imageText, centerX - textWidth, centerY + textBaseLineHeight, textPaint)
+
+            }
+        }
+    }
 }
