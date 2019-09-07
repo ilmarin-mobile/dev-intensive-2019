@@ -1,5 +1,6 @@
 package ru.skillbranch.devintensive.utils
 
+import android.text.TextUtils
 import java.lang.StringBuilder
 
 object Utils {
@@ -67,9 +68,12 @@ object Utils {
 
     fun transliteration(payload: String, divider: String = " "): String {
         val trasliterated = StringBuilder()
-        payload.forEach {
-            if (it.isWhitespace()) trasliterated.append(divider)
-            else trasliterated.append(it.toString().toLatin())
+        payload.trim().let {
+            if (!TextUtils.isEmpty(it))
+                it.forEach {
+                    if (it.isWhitespace()) trasliterated.append(divider)
+                    else trasliterated.append(it.toString().toLatin())
+                }
         }
         return trasliterated.toString()
     }
@@ -80,10 +84,11 @@ object Utils {
                 сyrillicToLatin[this]!!
             else
                 сyrillicToLatin[toLowerCase()]!!.let { cyrillicResult ->
-                    if (cyrillicResult.length == 1)
+                    if (cyrillicResult.length == 0)
+                        cyrillicResult
+                    else if (cyrillicResult.length == 1)
                         cyrillicResult.toUpperCase()
-                    else
-                        cyrillicResult.first().toUpperCase() + cyrillicResult.substring(1)
+                    else cyrillicResult.first().toUpperCase() + cyrillicResult.substring(1)
                 }
         } else
             this.toString()
